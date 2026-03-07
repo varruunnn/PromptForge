@@ -2,12 +2,14 @@ import dotenv from "dotenv"
 dotenv.config({ path: "../../.env" })
 import Fastify from 'fastify'
 import { eq, and } from 'drizzle-orm';
+import cors from "@fastify/cors"
 import { db, promptRuns } from '@promptforge/database'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { prompts, promptVersions } from '@promptforge/database'
 const server = Fastify({
   logger: true
 })
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 if (!genAI) throw new Error("Missing Gemini key")
 
@@ -83,8 +85,52 @@ server.post('/v1/run', async (request, reply) => {
   }
 });
 
+server.post('/v1/test', async (request, reply) => {
+  const { promptText, model, inputVariables } = request.body as {
+    promptText: string;
+    model: string;
+    inputVariables?: Record<string, string>;
+  };
 
+  if (!promptText || !model) {
+    return reply.status(400).send({ error: "promptText and model are required" });
+  }
+  let finalPrompt = promptText;
+  if (inputVariables) {
+    for (const [key, value] of Object.entries(inputVariables)) {
+      finalPrompt = finalPrompt.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
+  }
+
+  const startTime = Date.now();
+
+  try {
+    const generativeModel = genAI.getGenerativeModel({ model });
+    const result = await generativeModel.generateContent(finalPrompt);
+
+    const responseText = result.response.text();
+    const usage = result.response.usageMetadata;
+    const latencyMs = Date.now() - startTime;
+
+    return {
+      success: true,
+      output: responseText,
+      telemetry: {
+        latencyMs,
+        promptTokens: usage?.promptTokenCount || 0,
+        completionTokens: usage?.candidatesTokenCount || 0
+      }
+    };
+  } catch (error) {
+    server.log.error("Test endpoint error:", error);
+    return reply.status(500).send({ error: "LLM execution failed" });
+  }
+});
 const start = async () => {
+  await server.register(cors, {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "OPTIONS"],
+  });
   try {
     await server.listen({ port: 3001, host: '0.0.0.0' })
     console.log(`gateway running on http://localhost:3001`);
