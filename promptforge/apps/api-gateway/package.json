@@ -10,7 +10,9 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@promptforge/database": "workspace:*",
+    "@promptforge/sdk": "workspace:*",
     "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.1",
     "fastify": "^4.26.2"
   },
   "devDependencies": {
