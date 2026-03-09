@@ -29,7 +29,7 @@ export const promptRuns = pgTable('prompt_runs', {
 
 export const evaluations = pgTable('evaluations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  promptRunId: uuid('prompt_run_id').references(() => promptRuns.id).notNull(),
+  promptRunId: uuid('prompt_run_id').references(() => promptRuns.id , {onDelete: 'cascade'}).notNull(),
   score: integer('score').notNull(),
   reasoning: text('reasoning'),
   createdAt: timestamp('created_at').defaultNow(),
