@@ -26,3 +26,11 @@ export const promptRuns = pgTable('prompt_runs', {
   costUsd: numeric('cost_usd', { precision: 10, scale: 6 }),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const evaluations = pgTable('evaluations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  promptRunId: uuid('prompt_run_id').references(() => promptRuns.id).notNull(),
+  score: integer('score').notNull(),
+  reasoning: text('reasoning'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
