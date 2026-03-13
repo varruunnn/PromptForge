@@ -12,7 +12,7 @@ graph TD
     Client[Client Application / SDK]
     Gateway[Fastify API Gateway]
     DB[(Neon Serverless Postgres)]
-    LLM[Gemini 1.5 Flash API]
+    LLM[Gemini]
     Worker[AI Evaluator Worker]
     Dashboard[Next.js Dashboard]
 
