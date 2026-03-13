@@ -1,10 +1,10 @@
-# PromptForge ⚡️
+# PromptForge
 
 An AI Prompt Observability and Evaluation Platform designed to help developers monitor, test, optimize, and version their LLM prompts. 
 
 Instead of hardcoding complex prompts into application code, developers use the PromptForge SDK to execute managed templates via an API Gateway. The platform automatically logs token usage, tracks latency, and utilizes an asynchronous background worker to grade AI outputs for quality (LLM-as-a-judge).
 
-## 🏗 System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
