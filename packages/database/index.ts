@@ -1,3 +1,10 @@
+import dotenv from "dotenv"
+import path from "path"
+
+dotenv.config({
+  path: path.join(process.cwd(), ".env")
+})
+
 import { neon } from "@neondatabase/serverless"
 import { drizzle } from "drizzle-orm/neon-http"
 import * as schema from "./schema"
