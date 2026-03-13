@@ -16,7 +16,20 @@ export default async function PromptAnalyticsPage({
     .limit(1);
 
   if (promptData.length === 0)
-    return <div className="p-8">Prompt not found</div>;
+    return (
+      <div className="min-h-[calc(100vh-52px)] bg-[#07090F] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center text-slate-600 mx-auto">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="10" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M14 9v6M14 18v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <p className="text-slate-400 font-medium">Prompt not found</p>
+          <p className="text-xs text-slate-600 font-mono">{id}</p>
+        </div>
+      </div>
+    );
 
   const runsData = await db
     .select({
@@ -58,37 +71,46 @@ export default async function PromptAnalyticsPage({
       : "N/A";
 
   return (
-    <main className="p-8 max-w-6xl mx-auto space-y-8">
-      <div className="flex justify-between items-end border-b pb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {promptData[0].name}
-          </h1>
-          <p className="text-muted-foreground mt-1">Prompt ID: {id}</p>
+    <main className="min-h-[calc(100vh-52px)] bg-[#07090F]">
+      <div className="max-w-6xl mx-auto px-8 py-12 space-y-10">
+
+        <div className="flex items-start justify-between gap-6">
+          <div className="space-y-1 flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-xs font-medium text-violet-400 uppercase tracking-widest mb-3">
+              <div className="w-4 h-px bg-violet-400/60" />
+              Analytics
+            </div>
+            <h1 className="text-[2rem] font-bold tracking-tight text-white leading-none truncate">
+              {promptData[0].name}
+            </h1>
+            <p className="text-slate-600 mt-2 text-xs font-mono">{id}</p>
+          </div>
+
+          <div className="flex items-stretch gap-3 flex-shrink-0">
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-5 py-3.5 min-w-[110px] text-center hover:border-white/[0.12] transition-colors duration-200">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Total Runs</p>
+              <p className="text-2xl font-bold text-white tabular-nums">{totalRuns}</p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-5 py-3.5 min-w-[110px] text-center hover:border-white/[0.12] transition-colors duration-200">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Avg Latency</p>
+              <p className="text-2xl font-bold text-amber-400 tabular-nums">{avgLatency}<span className="text-sm font-medium text-amber-400/60 ml-0.5">ms</span></p>
+            </div>
+
+            <div className="rounded-xl border border-violet-500/30 bg-violet-500/[0.07] px-5 py-3.5 min-w-[110px] text-center hover:border-violet-500/50 hover:bg-violet-500/[0.10] transition-colors duration-200">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-violet-400/80 mb-1">Avg Quality</p>
+              <p className="text-2xl font-bold text-violet-300 tabular-nums">
+                {avgScore}
+                {avgScore !== "N/A" && <span className="text-sm font-medium text-violet-400/60 ml-0.5">/10</span>}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-4">
-          <div className="border rounded-md px-4 py-2 bg-slate-50">
-            <p className="text-sm text-muted-foreground">Total Runs</p>
-            <p className="text-xl font-bold">{totalRuns}</p>
-          </div>
+        <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
 
-          <div className="border rounded-md px-4 py-2 bg-slate-50">
-            <p className="text-sm text-muted-foreground">Avg Latency</p>
-            <p className="text-xl font-bold">{avgLatency}ms</p>
-          </div>
-
-          <div className="border rounded-md px-4 py-2 bg-blue-50 text-blue-900 border-blue-200">
-            <p className="text-sm font-medium">Avg Quality</p>
-            <p className="text-xl font-bold">
-              {avgScore}
-              {avgScore !== "N/A" ? "/10" : ""}
-            </p>
-          </div>
-        </div>
+        <PromptCharts data={chartData} />
       </div>
-
-      <PromptCharts data={chartData} />
     </main>
   );
 }
