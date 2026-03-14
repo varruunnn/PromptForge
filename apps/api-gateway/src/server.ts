@@ -122,10 +122,34 @@ server.post('/v1/test', async (request, reply) => {
       }
     };
   } catch (error) {
-    server.log.error("Test endpoint error:", error);
+   server.log.error(error, "Test endpoint error");
     return reply.status(500).send({ error: "LLM execution failed" });
   }
 });
+
+
+server.post('/v1/prompts', async (request, reply) => {
+  const { name, template } = request.body as { name: string; template: string };
+  
+  if (!name || !template) {
+    return reply.status(400).send({ error: "Name and template are required" });
+  }
+
+  try {
+    const [newPrompt] = await db.insert(prompts).values({ name }).returning();
+    await db.insert(promptVersions).values({
+      promptId: newPrompt.id,
+      versionTag: 'v1',
+      template: template
+    });
+
+    return { success: true, promptId: newPrompt.id };
+  } catch (error) {
+    server.log.error(error, "Test endpoint error");
+    return reply.status(500).send({ error: "Database error while saving prompt" });
+  }
+});
+
 const start = async () => {
   await server.register(cors, {
     origin: "http://localhost:3000",

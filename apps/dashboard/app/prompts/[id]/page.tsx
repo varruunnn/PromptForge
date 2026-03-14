@@ -2,6 +2,16 @@ import { db, prompts, promptVersions, promptRuns, evaluations } from "@promptfor
 import { eq, desc } from "drizzle-orm";
 import { PromptCharts } from "@/components/PromptCharts";
 
+// NEW: Shadcn table imports
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 export default async function PromptAnalyticsPage({
   params,
 }: {
@@ -87,21 +97,38 @@ export default async function PromptAnalyticsPage({
           </div>
 
           <div className="flex items-stretch gap-3 flex-shrink-0">
-            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-5 py-3.5 min-w-[110px] text-center hover:border-white/[0.12] transition-colors duration-200">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Total Runs</p>
-              <p className="text-2xl font-bold text-white tabular-nums">{totalRuns}</p>
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-5 py-3.5 min-w-[110px] text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Total Runs
+              </p>
+              <p className="text-2xl font-bold text-white tabular-nums">
+                {totalRuns}
+              </p>
             </div>
 
-            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-5 py-3.5 min-w-[110px] text-center hover:border-white/[0.12] transition-colors duration-200">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Avg Latency</p>
-              <p className="text-2xl font-bold text-amber-400 tabular-nums">{avgLatency}<span className="text-sm font-medium text-amber-400/60 ml-0.5">ms</span></p>
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-5 py-3.5 min-w-[110px] text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Avg Latency
+              </p>
+              <p className="text-2xl font-bold text-amber-400 tabular-nums">
+                {avgLatency}
+                <span className="text-sm font-medium text-amber-400/60 ml-0.5">
+                  ms
+                </span>
+              </p>
             </div>
 
-            <div className="rounded-xl border border-violet-500/30 bg-violet-500/[0.07] px-5 py-3.5 min-w-[110px] text-center hover:border-violet-500/50 hover:bg-violet-500/[0.10] transition-colors duration-200">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-violet-400/80 mb-1">Avg Quality</p>
+            <div className="rounded-xl border border-violet-500/30 bg-violet-500/[0.07] px-5 py-3.5 min-w-[110px] text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-violet-400/80 mb-1">
+                Avg Quality
+              </p>
               <p className="text-2xl font-bold text-violet-300 tabular-nums">
                 {avgScore}
-                {avgScore !== "N/A" && <span className="text-sm font-medium text-violet-400/60 ml-0.5">/10</span>}
+                {avgScore !== "N/A" && (
+                  <span className="text-sm font-medium text-violet-400/60 ml-0.5">
+                    /10
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -110,6 +137,65 @@ export default async function PromptAnalyticsPage({
         <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
 
         <PromptCharts data={chartData} />
+
+        {/* NEW: Recent Executions Table */}
+        <div className="mt-12 space-y-4">
+          <h3 className="text-2xl font-bold tracking-tight text-white">
+            Recent Executions
+          </h3>
+
+          <div className="border border-white/[0.07] rounded-md bg-white/[0.02] overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Latency</TableHead>
+                  <TableHead>Tokens</TableHead>
+                  <TableHead className="text-right">
+                    AI Quality Grade
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {chartData.slice(-10).reverse().map((run) => (
+                  <TableRow key={run.id}>
+                    <TableCell>
+                      {run.createdAt?.toLocaleString()}
+                    </TableCell>
+
+                    <TableCell>
+                      {run.latencyMs}ms
+                    </TableCell>
+
+                    <TableCell>
+                      {(run.promptTokens || 0) +
+                        (run.completionTokens || 0)}
+                    </TableCell>
+
+                    <TableCell className="text-right font-medium">
+                      {run.score !== null ? (
+                        <span
+                          className={
+                            run.score >= 8
+                              ? "text-green-400"
+                              : "text-amber-400"
+                          }
+                        >
+                          {run.score}/10
+                        </span>
+                      ) : (
+                        <span className="text-slate-500 italic text-sm">
+                          Evaluating...
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </div>
     </main>
   );

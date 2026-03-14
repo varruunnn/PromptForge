@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 async function testPrompt(promptText: string) {
   const response = await fetch("http://localhost:3001/v1/test", {
@@ -18,10 +20,42 @@ async function testPrompt(promptText: string) {
 }
 
 export default function PlaygroundPage() {
-  const [prompt, setPrompt] = useState("Write a haiku about debugging code at 2 AM.");
+  const [prompt, setPrompt] = useState("Write PromptForge's mission statement in a poetic style.");
   const [output, setOutput] = useState("");
   const [telemetry, setTelemetry] = useState<{ latencyMs?: number; promptTokens?: number; completionTokens?: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const [promptName, setPromptName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+
+  const handleSave = async () => {
+    if (!promptName || !prompt) return alert("Please provide a name and template.");
+
+    setIsSaving(true);
+
+    try {
+      const res = await fetch("http://localhost:3001/v1/prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: promptName.toLowerCase().replace(/\s+/g, "_"),
+          template: prompt,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        router.push("/");
+      }
+    } catch (error) {
+      alert("Failed to save prompt.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   const handleRun = async () => {
     setIsLoading(true);
@@ -58,8 +92,8 @@ export default function PlaygroundPage() {
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-600 bg-white/[0.02] border border-white/[0.05] rounded-lg px-3 py-2">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1"/>
-                <path d="M4.5 6l1.5 1.5L9 4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1" />
+                <path d="M4.5 6l1.5 1.5L9 4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               gemini-2.5-flash-lite
             </div>
@@ -90,29 +124,35 @@ export default function PlaygroundPage() {
                 onChange={(e) => setPrompt(e.target.value)}
               />
             </div>
-            <div className="p-4 border-t border-white/[0.05]">
+            <div className="p-4 border-t border-white/[0.05] space-y-4">
               <Button
                 onClick={handleRun}
                 disabled={isLoading}
                 className="w-full h-10 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm rounded-lg shadow-lg shadow-violet-500/20 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed border-0"
               >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
-                      <circle cx="7" cy="7" r="5.5" stroke="white" strokeWidth="1.5" strokeOpacity="0.3"/>
-                      <path d="M7 1.5a5.5 5.5 0 0 1 5.5 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                    Running…
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M3 2.5l8 4.5-8 4.5V2.5z" fill="white"/>
-                    </svg>
-                    Run Prompt
-                  </span>
-                )}
+                {isLoading ? "Running…" : "Run Prompt"}
               </Button>
+
+              <div className="pt-4 border-t border-white/[0.05] space-y-3">
+                <Label className="text-xs text-slate-500 uppercase tracking-wider">
+                  Prompt Name
+                </Label>
+
+                <Input
+                  value={promptName}
+                  onChange={(e) => setPromptName(e.target.value)}
+                  placeholder="summarize_ticket"
+                  className="bg-white/[0.03] border-white/[0.08] text-slate-200"
+                />
+
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving || !promptName}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                >
+                  {isSaving ? "Saving…" : "Save to Registry"}
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -148,7 +188,7 @@ export default function PlaygroundPage() {
                   ) : (
                     <>
                       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                        <path d="M4 7h20M4 14h14M4 21h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M4 7h20M4 14h14M4 21h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
                       <p className="text-xs">Response will appear here</p>
                     </>
