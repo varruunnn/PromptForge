@@ -6,9 +6,9 @@ async function main() {
   const startTime = Date.now();
 
   const response = await promptforge.run({
-    promptName: "generate_haiku",
+    promptName: "summarize_ticket",
     version: "v1",
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-2.5-flash",
     inputVariables: {
       complaint: "The new UI update is incredibly slow and my dashboard keeps crashing when I try to update billing API keys!"
     }
