@@ -27,3 +27,10 @@ graph TD
     Worker -->|Saves Quality Score| DB
     
     Dashboard -->|Visualizes Metrics| DB
+
+
+```
+
+
+https://github.com/user-attachments/assets/b4eb15d2-2a99-42a2-b276-9aed0bba011f
+
